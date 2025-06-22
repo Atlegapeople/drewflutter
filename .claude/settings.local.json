@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(taskkill:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(flutter clean:*)",
+      "Bash(git init:*)",
+      "Bash(ls:*)",
+      "Bash(rm:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)",
+      "Bash(git config:*)",
+      "Bash(sudo git init:*)"
+    ],
+    "deny": []
+  }
+}
