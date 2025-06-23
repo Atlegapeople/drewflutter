@@ -32,10 +32,10 @@ class DispenseService extends ChangeNotifier {
     try {
       _setDispensing(true, productType.name);
       
-      final success = await _sendSerialDispenseCommand(productType);
+      final success = await _createDispenseCommand(productType);
       
       if (success) {
-        print("🎯 Serial dispense command sent for ${productType.name}");
+        print("🎯 Dispense command created for ${productType.name}");
         
         // Update database inventory and log dispense
         final productTypeStr = productType.toString().split('.').last;
@@ -58,6 +58,42 @@ class DispenseService extends ChangeNotifier {
     } catch (e) {
       print("❌ Error dispensing ${productType.name}: $e");
       _setDispensing(false, null);
+      return false;
+    }
+  }
+
+  /// Create a dispense command file
+  Future<bool> _createDispenseCommand(ProductType productType) async {
+    try {
+      final dispenseDirObj = Directory(dispenseDir);
+      if (!dispenseDirObj.existsSync()) {
+        dispenseDirObj.createSync(recursive: true);
+      }
+      
+      final commandId = DateTime.now().millisecondsSinceEpoch.toString();
+      final filename = '$dispenseDir/dispense_$commandId.json';
+      
+      final commandData = {
+        'command_id': commandId,
+        'product_type': productType.name,
+        'timestamp': DateTime.now().toIso8601String(),
+        'status': 'pending'
+      };
+      
+      final file = File(filename);
+      
+      // Write to temporary file first, then rename (atomic operation)
+      final tempFile = File('$filename.tmp');
+      await tempFile.writeAsString(jsonEncode(commandData));
+      await tempFile.rename(filename);
+      
+      _lastDispenseId = commandId;
+      
+      print("📝 Created dispense command: $filename");
+      return true;
+      
+    } catch (e) {
+      print("❌ Failed to create dispense command: $e");
       return false;
     }
   }
@@ -99,11 +135,19 @@ class DispenseService extends ChangeNotifier {
     }
   }
 
-  /// Check if a dispense command was processed (simplified for serial)
+  /// Check if a dispense command was processed
   Future<bool> isCommandProcessed(String commandId) async {
-    // For serial communication, assume command is processed immediately
-    // In a real implementation, you might read response from serial port
-    return true;
+    try {
+      final filename = '$dispenseDir/dispense_$commandId.json';
+      final file = File(filename);
+      
+      // File was deleted, meaning it was processed
+      return !file.existsSync();
+      
+    } catch (e) {
+      print("❌ Error checking command status: $e");
+      return false;
+    }
   }
 
   /// Wait for dispense completion and reset state
