@@ -9,6 +9,7 @@ import 'inventory_service.dart';
 import 'database_service.dart';
 
 class DispenseService extends ChangeNotifier {
+  static const String dispenseDir = 'dispense_commands';
   static const String serialPortPath = '/dev/ttyUSB0';
   static const int baudRate = 9600;
   
@@ -203,10 +204,30 @@ class DispenseService extends ChangeNotifier {
     return true;
   }
 
-  /// Clean up old command files (no longer needed for serial)
+  /// Clean up old command files
   Future<void> cleanupOldCommands() async {
-    // No cleanup needed for serial communication
-    print("🧹 Serial communication doesn't require file cleanup");
+    try {
+      final dispenseDirObj = Directory(dispenseDir);
+      if (!dispenseDirObj.existsSync()) return;
+      
+      final now = DateTime.now();
+      
+      for (final file in dispenseDirObj.listSync().whereType<File>()) {
+        if (file.path.contains('dispense_') && file.path.endsWith('.json')) {
+          final stat = file.statSync();
+          final age = now.difference(stat.modified);
+          
+          // Delete files older than 10 minutes
+          if (age.inMinutes > 10) {
+            await file.delete();
+            print("🗑️ Cleaned up old dispense command: ${path.basename(file.path)}");
+          }
+        }
+      }
+      
+    } catch (e) {
+      print("❌ Error cleaning up commands: $e");
+    }
   }
 
   @override
