@@ -136,7 +136,10 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
     if (success) {
       soundService.playSound(SoundType.success);
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/products');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ProductScreen()),
+        );
       }
       return;
     }
