@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 
 # Configuration
-SERIAL_PORT = 'COM7'
+SERIAL_PORT = '/dev/ttyUSB0'
 BAUD_RATE = 9600
 CARD_DIR = 'card_scans'
 DISPENSE_DIR = 'dispense_commands'
