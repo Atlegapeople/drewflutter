@@ -211,37 +211,68 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
                             children: [
                               Container(
                                 padding: EdgeInsets.all(isSmallScreen ? 4 : 8),
-                                width: isSmallScreen ? 200 : 300,
-                                height: isSmallScreen ? 250 : 350,
+                                width: isSmallScreen ? 220 : 320,
+                                height: isSmallScreen ? 280 : 380,
                                 decoration: BoxDecoration(
                                   border: Border.all(color: Colors.pink),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
-                                child: SizedBox(
-                                  width: isSmallScreen ? 180 : 260,
-                                  height: isSmallScreen ? 200 : 280,
-                                  child: PinKeypad(
-                                    onKeyPress: (key) {
-                                      if (authService.isLockedOut) return;
-                                      
-                                      if (key == 'clear') {
-                                        _pinController.clear();
-                                      } else if (key == 'backspace') {
-                                        final text = _pinController.text;
-                                        if (text.isNotEmpty) {
-                                          _pinController.text = text.substring(0, text.length - 1);
-                                        }
-                                      } else if (key == 'enter') {
-                                        _handlePinSubmit();
-                                      } else {
-                                        if (_pinController.text.length < 4) {
-                                          _pinController.text += key;
-                                        }
-                                      }
-                                    },
-                                    disabled: _isAuthenticating || authService.isLockedOut,
-                                    buttonSize: isSmallScreen ? 50 : 70,
-                                  ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      width: isSmallScreen ? 180 : 260,
+                                      height: isSmallScreen ? 50 : 70,
+                                      margin: const EdgeInsets.only(bottom: 16),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade900,
+                                        borderRadius: BorderRadius.circular(15),
+                                        border: Border.all(color: Colors.pink.withOpacity(0.5), width: 1.5),
+                                      ),
+                                      child: Center(
+                                        child: _pinController.text.isEmpty
+                                          ? Text(
+                                              'Enter PIN',
+                                              style: TextStyle(fontSize: isSmallScreen ? 14 : 18, color: Colors.grey),
+                                            )
+                                          : Text(
+                                              '●' * _pinController.text.length,
+                                              style: TextStyle(
+                                                fontSize: isSmallScreen ? 24 : 32,
+                                                letterSpacing: isSmallScreen ? 8 : 12,
+                                                color: Colors.pink,
+                                              ),
+                                            ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: isSmallScreen ? 200 : 300,
+                                      height: isSmallScreen ? 200 : 280,
+                                      child: PinKeypad(
+                                        onKeyPress: (key) {
+                                          if (authService.isLockedOut) return;
+                                          
+                                          if (key == 'clear') {
+                                            _pinController.clear();
+                                          } else if (key == 'backspace') {
+                                            final text = _pinController.text;
+                                            if (text.isNotEmpty) {
+                                              _pinController.text = text.substring(0, text.length - 1);
+                                            }
+                                          } else if (key == 'enter') {
+                                            _handlePinSubmit();
+                                          } else {
+                                            if (_pinController.text.length < 4) {
+                                              _pinController.text += key;
+                                            }
+                                          }
+                                        },
+                                        disabled: _isAuthenticating || authService.isLockedOut,
+                                        buttonSize: isSmallScreen ? 50 : 70,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -260,7 +291,23 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.nfc, size: isSmallScreen ? 60 : 100, color: Colors.pink),
+                                  Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Image.asset(
+                                        'assets/images/scan-card.png',
+                                        width: isSmallScreen ? 100 : 150,
+                                        height: isSmallScreen ? 100 : 150,
+                                      ),
+                                      PulseAnimation(
+                                        child: Icon(
+                                          Icons.nfc,
+                                          size: isSmallScreen ? 60 : 100,
+                                          color: Colors.pink.withOpacity(0.7),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                   SizedBox(height: isSmallScreen ? 8 : 16),
                                   Text(
                                     'Tap your card',
@@ -316,6 +363,47 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
           );
         },
       ),
+    );
+  }
+}
+
+class PulseAnimation extends StatefulWidget {
+  final Widget child;
+  
+  const PulseAnimation({super.key, required this.child});
+  
+  @override
+  State<PulseAnimation> createState() => _PulseAnimationState();
+}
+
+class _PulseAnimationState extends State<PulseAnimation> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+  
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    _animation = Tween<double>(begin: 0.7, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+  
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _animation,
+      child: widget.child,
     );
   }
 }
