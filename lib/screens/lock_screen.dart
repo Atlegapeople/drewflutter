@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lottie/lottie.dart';
 import '../services/authentication_service.dart';
 import '../services/sound_service.dart';
 import '../widgets/pin_keypad.dart';
@@ -22,6 +23,7 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
   String? _errorMessage;
   Timer? _errorTimer;
   final GlobalKey<RfidScannerState> _rfidScannerKey = GlobalKey<RfidScannerState>();
+  bool _showDeniedAnimation = false;
 
   @override
   void initState() {
@@ -100,7 +102,7 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
     }
   }
 
-  void _onRfidScanned(String cardId) async {
+  void _onRfidScanned(String? cardId) async {
     final authService = Provider.of<AuthenticationService>(context, listen: false);
     final soundService = Provider.of<SoundService>(context, listen: false);
     
@@ -123,6 +125,7 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
     setState(() {
       _isAuthenticating = true;
       _errorMessage = null;
+      _showDeniedAnimation = true;
     });
     
     final success = await authService.authenticateWithRfid(cardId);
@@ -139,11 +142,11 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
     } else {
       soundService.playSound(SoundType.error);
       
-      // Show access denied animation
-      _rfidScannerKey.currentState?.showAccessDenied();
+      await Future.delayed(const Duration(seconds: 2));
       
       setState(() {
         _isAuthenticating = false;
+        _showDeniedAnimation = false;
         if (authService.isLockedOut) {
           _errorMessage = 'Too many failed attempts. System locked.';
         } else {
@@ -283,81 +286,91 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
                           ),
                           
                           // RFID Tab
-                          Center(
-                            child: Container(
-                              padding: EdgeInsets.all(isSmallScreen ? 8 : 16),
-                              width: isSmallScreen ? 200 : 300,
-                              height: isSmallScreen ? 200 : 300,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: const Color(0xFFF48FB1),
-                                  width: 3.0,
+                          _showDeniedAnimation
+                            ? Center(
+                                child: Lottie.asset(
+                                  'assets/animations/denied - Animation - 1750594815870.json',
+                                  width: isSmallScreen ? 200 : 300,
+                                  height: isSmallScreen ? 200 : 300,
+                                  fit: BoxFit.contain,
+                                  repeat: false,
                                 ),
-                                borderRadius: BorderRadius.circular(16),
-                                image: DecorationImage(
-                                  image: AssetImage('assets/images/scan-card.png'),
-                                  fit: BoxFit.cover,
-                                  colorFilter: ColorFilter.mode(
-                                    Colors.black.withOpacity(0.3),
-                                    BlendMode.darken,
+                              )
+                            : Center(
+                                child: Container(
+                                  padding: EdgeInsets.all(isSmallScreen ? 8 : 16),
+                                  width: isSmallScreen ? 200 : 300,
+                                  height: isSmallScreen ? 200 : 300,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: const Color(0xFFF48FB1),
+                                      width: 3.0,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16),
+                                    image: DecorationImage(
+                                      image: AssetImage('assets/images/scan-card.png'),
+                                      fit: BoxFit.cover,
+                                      colorFilter: ColorFilter.mode(
+                                        Colors.black.withOpacity(0.3),
+                                        BlendMode.darken,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Stack(
-                                    alignment: Alignment.center,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Container(
-                                        width: isSmallScreen ? 120 : 180,
-                                        height: isSmallScreen ? 120 : 180,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: const Color(0xFFF48FB1).withOpacity(0.1),
-                                        ),
-                                        child: PulseAnimation(
-                                          child: Container(
-                                            margin: const EdgeInsets.all(20),
-                                            decoration: const BoxDecoration(
+                                      Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          Container(
+                                            width: isSmallScreen ? 120 : 180,
+                                            height: isSmallScreen ? 120 : 180,
+                                            decoration: BoxDecoration(
                                               shape: BoxShape.circle,
-                                              color: Color(0xFFF48FB1),
+                                              color: const Color(0xFFF48FB1).withOpacity(0.1),
                                             ),
-                                            child: Icon(
-                                              Icons.nfc,
-                                              size: isSmallScreen ? 40 : 60,
-                                              color: Colors.white,
+                                            child: PulseAnimation(
+                                              child: Container(
+                                                margin: const EdgeInsets.all(20),
+                                                decoration: const BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: Color(0xFFF48FB1),
+                                                ),
+                                                child: Icon(
+                                                  Icons.nfc,
+                                                  size: isSmallScreen ? 40 : 60,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
                                             ),
                                           ),
+                                        ],
+                                      ),
+                                      SizedBox(height: isSmallScreen ? 8 : 16),
+                                      Text(
+                                        'Tap your card',
+                                        style: TextStyle(
+                                          fontSize: isSmallScreen ? 14 : 20,
+                                          color: const Color(0xFFF48FB1),
+                                          fontWeight: FontWeight.bold,
+                                          shadows: [
+                                            Shadow(
+                                              blurRadius: 4.0,
+                                              color: Colors.black.withOpacity(0.5),
+                                              offset: const Offset(2, 2),
+                                            ),
+                                          ],
                                         ),
+                                      ),
+                                      RfidScanner(
+                                        key: _rfidScannerKey,
+                                        onCardScanned: _onRfidScanned,
+                                        isLocked: authService.isLockedOut,
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: isSmallScreen ? 8 : 16),
-                                  Text(
-                                    'Tap your card',
-                                    style: TextStyle(
-                                      fontSize: isSmallScreen ? 14 : 20,
-                                      color: const Color(0xFFF48FB1),
-                                      fontWeight: FontWeight.bold,
-                                      shadows: [
-                                        Shadow(
-                                          blurRadius: 4.0,
-                                          color: Colors.black.withOpacity(0.5),
-                                          offset: const Offset(2, 2),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  RfidScanner(
-                                    key: _rfidScannerKey,
-                                    onCardScanned: _onRfidScanned,
-                                    isLocked: authService.isLockedOut,
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
                         ],
                       ),
                     ),
