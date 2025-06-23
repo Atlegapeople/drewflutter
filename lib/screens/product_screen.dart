@@ -142,6 +142,15 @@ class _ProductScreenState extends State<ProductScreen> {
               }
             },
           ),
+          // Temporary debug sound test button
+          IconButton(
+            icon: const Icon(Icons.music_note),
+            tooltip: 'Test Sound',
+            onPressed: () {
+              print('Testing sound from UI button...');
+              soundService.testSound();
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',

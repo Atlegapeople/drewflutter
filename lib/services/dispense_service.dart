@@ -3,15 +3,18 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
+import 'package:flutter_libserialport/flutter_libserialport.dart';
 import 'inventory_service.dart';
 import 'database_service.dart';
 
 class DispenseService extends ChangeNotifier {
-  static const String dispenseDir = 'dispense_commands';
+  static const String serialPortPath = '/dev/ttyUSB0';
+  static const int baudRate = 9600;
   
   bool _isDispensing = false;
   String? _currentProduct;
   String? _lastDispenseId;
+  SerialPort? _serialPort;
 
   // Getters
   bool get isDispensing => _isDispensing;
@@ -28,10 +31,10 @@ class DispenseService extends ChangeNotifier {
     try {
       _setDispensing(true, productType.name);
       
-      final success = await _createDispenseCommand(productType);
+      final success = await _sendSerialDispenseCommand(productType);
       
       if (success) {
-        print("🎯 Dispense command created for ${productType.name}");
+        print("🎯 Serial dispense command sent for ${productType.name}");
         
         // Update database inventory and log dispense
         final productTypeStr = productType.toString().split('.').last;
@@ -58,55 +61,52 @@ class DispenseService extends ChangeNotifier {
     }
   }
 
-  /// Create a dispense command file
-  Future<bool> _createDispenseCommand(ProductType productType) async {
+  /// Send dispense command via serial port
+  Future<bool> _sendSerialDispenseCommand(ProductType productType) async {
     try {
-      final dispenseDirObj = Directory(dispenseDir);
-      if (!dispenseDirObj.existsSync()) {
-        dispenseDirObj.createSync(recursive: true);
+      _serialPort = SerialPort(serialPortPath);
+      
+      if (!_serialPort!.openReadWrite()) {
+        print("❌ Failed to open serial port: ${SerialPort.lastError}");
+        return false;
+      }
+      
+      final config = SerialPortConfig();
+      config.baudRate = baudRate;
+      config.bits = 8;
+      config.parity = SerialPortParity.none;
+      config.stopBits = 1;
+      config.setFlowControl(SerialPortFlowControl.none);
+      
+      if (!_serialPort!.config = config) {
+        print("❌ Failed to configure serial port: ${SerialPort.lastError}");
+        _serialPort!.close();
+        return false;
       }
       
       final commandId = DateTime.now().millisecondsSinceEpoch.toString();
-      final filename = '$dispenseDir/dispense_$commandId.json';
+      final command = '${productType.name}\n';
       
-      final commandData = {
-        'command_id': commandId,
-        'product_type': productType.name,
-        'timestamp': DateTime.now().toIso8601String(),
-        'status': 'pending'
-      };
+      final bytesWritten = _serialPort!.write(command.codeUnits);
       
-      final file = File(filename);
-      
-      // Write to temporary file first, then rename (atomic operation)
-      final tempFile = File('$filename.tmp');
-      await tempFile.writeAsString(jsonEncode(commandData));
-      await tempFile.rename(filename);
-      
+      _serialPort!.close();
       _lastDispenseId = commandId;
       
-      print("📝 Created dispense command: $filename");
-      return true;
+      print("📡 Sent serial command: $command (${bytesWritten} bytes)");
+      return bytesWritten > 0;
       
     } catch (e) {
-      print("❌ Failed to create dispense command: $e");
+      print("❌ Serial communication error: $e");
+      _serialPort?.close();
       return false;
     }
   }
 
-  /// Check if a dispense command was processed
+  /// Check if a dispense command was processed (simplified for serial)
   Future<bool> isCommandProcessed(String commandId) async {
-    try {
-      final filename = '$dispenseDir/dispense_$commandId.json';
-      final file = File(filename);
-      
-      // File was deleted, meaning it was processed
-      return !file.existsSync();
-      
-    } catch (e) {
-      print("❌ Error checking command status: $e");
-      return false;
-    }
+    // For serial communication, assume command is processed immediately
+    // In a real implementation, you might read response from serial port
+    return true;
   }
 
   /// Wait for dispense completion and reset state
@@ -162,34 +162,15 @@ class DispenseService extends ChangeNotifier {
     return true;
   }
 
-  /// Clean up old command files
+  /// Clean up old command files (no longer needed for serial)
   Future<void> cleanupOldCommands() async {
-    try {
-      final dispenseDirObj = Directory(dispenseDir);
-      if (!dispenseDirObj.existsSync()) return;
-      
-      final now = DateTime.now();
-      
-      for (final file in dispenseDirObj.listSync().whereType<File>()) {
-        if (file.path.contains('dispense_') && file.path.endsWith('.json')) {
-          final stat = file.statSync();
-          final age = now.difference(stat.modified);
-          
-          // Delete files older than 10 minutes
-          if (age.inMinutes > 10) {
-            await file.delete();
-            print("🗑️ Cleaned up old dispense command: ${path.basename(file.path)}");
-          }
-        }
-      }
-      
-    } catch (e) {
-      print("❌ Error cleaning up commands: $e");
-    }
+    // No cleanup needed for serial communication
+    print("🧹 Serial communication doesn't require file cleanup");
   }
 
   @override
   void dispose() {
+    _serialPort?.close();
     super.dispose();
   }
 }
