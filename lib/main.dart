@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'screens/lock_screen.dart';
+import 'screens/product_screen.dart';
 import 'services/authentication_service.dart';
 import 'services/inventory_service.dart';
 import 'services/sound_service.dart';

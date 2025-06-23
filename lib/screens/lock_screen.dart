@@ -72,7 +72,7 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
       if (mounted) {
         Navigator.pushReplacement(
           context, 
-          MaterialPageRoute(builder: (_) => const ProductScreen())
+          MaterialPageRoute(builder: (context) => const ProductScreen()),
         );
       }
     } else {
