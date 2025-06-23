@@ -115,10 +115,6 @@ class _ProductScreenState extends State<ProductScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'D.R.E.W. Products',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
         automaticallyImplyLeading: false,
         actions: [
           if (isAdmin)
@@ -178,38 +174,19 @@ class _ProductScreenState extends State<ProductScreen> {
           child: SafeArea(
             child: Column(
               children: [
-                // Logo and tagline section
                 Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(
                         'assets/images/logo.png',
-                        height: 40,
-                        fit: BoxFit.contain,
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Dignity • Respect • Empowerment for Women',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.white70,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Welcome, ${authService.currentUser.isNotEmpty ? authService.currentUser : 'User'}',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        width: 120, 
+                        height: 60, 
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
                 Expanded(
                   child: GridView.count(
                     crossAxisCount: 3, // Reduced from 4 to 3 for bigger cards
