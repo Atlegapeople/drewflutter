@@ -289,7 +289,7 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
                               width: isSmallScreen ? 200 : 300,
                               height: isSmallScreen ? 200 : 300,
                               decoration: BoxDecoration(
-                                border: Border.all(color: Colors.pink),
+                                border: Border.all(color: const Color(0xFFF48FB1)),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Column(
@@ -303,11 +303,26 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
                                         width: isSmallScreen ? 100 : 150,
                                         height: isSmallScreen ? 100 : 150,
                                       ),
-                                      PulseAnimation(
-                                        child: Icon(
-                                          Icons.nfc,
-                                          size: isSmallScreen ? 60 : 100,
-                                          color: Colors.pink.withOpacity(0.7),
+                                      Container(
+                                        width: isSmallScreen ? 120 : 180,
+                                        height: isSmallScreen ? 120 : 180,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: const Color(0xFFF48FB1).withOpacity(0.1),
+                                        ),
+                                        child: PulseAnimation(
+                                          child: Container(
+                                            margin: const EdgeInsets.all(20),
+                                            decoration: const BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Color(0xFFF48FB1),
+                                            ),
+                                            child: Icon(
+                                              Icons.nfc,
+                                              size: isSmallScreen ? 40 : 60,
+                                              color: Colors.white,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -315,7 +330,10 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
                                   SizedBox(height: isSmallScreen ? 8 : 16),
                                   Text(
                                     'Tap your card',
-                                    style: TextStyle(fontSize: isSmallScreen ? 14 : 20),
+                                    style: TextStyle(
+                                      fontSize: isSmallScreen ? 14 : 20,
+                                      color: const Color(0xFFF48FB1),
+                                    ),
                                   ),
                                   RfidScanner(
                                     key: _rfidScannerKey,
@@ -382,17 +400,22 @@ class PulseAnimation extends StatefulWidget {
 
 class _PulseAnimationState extends State<PulseAnimation> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _animation;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
   
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 2000),
       vsync: this,
     )..repeat(reverse: true);
     
-    _animation = Tween<double>(begin: 0.7, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    
+    _opacityAnimation = Tween<double>(begin: 0.6, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
   }
@@ -405,8 +428,17 @@ class _PulseAnimationState extends State<PulseAnimation> with SingleTickerProvid
   
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _animation,
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Opacity(
+            opacity: _opacityAnimation.value,
+            child: child,
+          ),
+        );
+      },
       child: widget.child,
     );
   }
