@@ -180,12 +180,6 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
                 child: Column(
                   children: [
                     SizedBox(height: isSmallScreen ? 8 : 16),
-                    Text(
-                      'Please authenticate to continue',
-                      style: TextStyle(fontSize: isSmallScreen ? 14 : 18),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: isSmallScreen ? 8 : 16),
                     Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
@@ -216,42 +210,38 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Container(
-                                padding: EdgeInsets.all(isSmallScreen ? 8 : 16),
+                                padding: EdgeInsets.all(isSmallScreen ? 4 : 8),
                                 width: isSmallScreen ? 200 : 300,
-                                height: isSmallScreen ? 200 : 300,
+                                height: isSmallScreen ? 250 : 350,
                                 decoration: BoxDecoration(
                                   border: Border.all(color: Colors.pink),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: isSmallScreen ? 180 : 260,
-                                      height: isSmallScreen ? 120 : 180,
-                                      child: PinKeypad(
-                                        onKeyPress: (key) {
-                                          if (authService.isLockedOut) return;
-                                          
-                                          if (key == 'clear') {
-                                            _pinController.clear();
-                                          } else if (key == 'backspace') {
-                                            final text = _pinController.text;
-                                            if (text.isNotEmpty) {
-                                              _pinController.text = text.substring(0, text.length - 1);
-                                            }
-                                          } else if (key == 'enter') {
-                                            _handlePinSubmit();
-                                          } else {
-                                            if (_pinController.text.length < 4) {
-                                              _pinController.text += key;
-                                            }
-                                          }
-                                        },
-                                        disabled: _isAuthenticating || authService.isLockedOut,
-                                      ),
-                                    ),
-                                  ],
+                                child: SizedBox(
+                                  width: isSmallScreen ? 180 : 260,
+                                  height: isSmallScreen ? 200 : 280,
+                                  child: PinKeypad(
+                                    onKeyPress: (key) {
+                                      if (authService.isLockedOut) return;
+                                      
+                                      if (key == 'clear') {
+                                        _pinController.clear();
+                                      } else if (key == 'backspace') {
+                                        final text = _pinController.text;
+                                        if (text.isNotEmpty) {
+                                          _pinController.text = text.substring(0, text.length - 1);
+                                        }
+                                      } else if (key == 'enter') {
+                                        _handlePinSubmit();
+                                      } else {
+                                        if (_pinController.text.length < 4) {
+                                          _pinController.text += key;
+                                        }
+                                      }
+                                    },
+                                    disabled: _isAuthenticating || authService.isLockedOut,
+                                    buttonSize: isSmallScreen ? 40 : 50,
+                                  ),
                                 ),
                               ),
                             ],
