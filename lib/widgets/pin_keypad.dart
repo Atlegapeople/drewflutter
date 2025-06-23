@@ -48,7 +48,7 @@ class PinKeypad extends StatelessWidget {
     );
   }
   
-  Color _getButtonColor(String value) {
+  Color _getButtonColor(String value, BuildContext context) {
     if (value == 'clear') {
       return Colors.orange.shade800;
     } else if (value == 'enter') {
@@ -71,7 +71,7 @@ class PinKeypad extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        backgroundColor: _getButtonColor(value),
+        backgroundColor: _getButtonColor(value, context),
         foregroundColor: Colors.white,
         disabledBackgroundColor: Colors.grey.shade800,
       ),
