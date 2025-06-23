@@ -48,49 +48,42 @@ class PinKeypad extends StatelessWidget {
     );
   }
   
-  Widget _buildKeyButton(BuildContext context, String value, IconData? icon, double buttonSize) {
+  Color _getButtonColor(String value) {
+    if (value == 'clear') {
+      return Colors.orange.shade800;
+    } else if (value == 'enter') {
+      return Theme.of(context).colorScheme.primary;
+    } else {
+      return Colors.grey.shade800;
+    }
+  }
+
+  Widget _buildKeyButton(BuildContext context, String value, IconData? icon, double size) {
     final soundService = Provider.of<SoundService>(context, listen: false);
     
-    Color backgroundColor;
-    if (value == 'clear') {
-      backgroundColor = Colors.orange.shade800;
-    } else if (value == 'enter') {
-      backgroundColor = Theme.of(context).colorScheme.primary;
-    } else {
-      backgroundColor = Colors.grey.shade800;
-    }
-
     return ElevatedButton(
-      onPressed: disabled
-          ? null
-          : () {
-              soundService.playSound(SoundType.buttonPress);
-              onKeyPress(value);
-            },
+      onPressed: disabled ? null : () {
+        soundService.playSound(SoundType.buttonPress); // Play sound on press
+        onKeyPress(value);
+      },
       style: ElevatedButton.styleFrom(
+        minimumSize: Size(size, size),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(buttonSize / 4),
+          borderRadius: BorderRadius.circular(12),
         ),
-        padding: EdgeInsets.zero,
-        backgroundColor: backgroundColor,
+        backgroundColor: _getButtonColor(value),
         foregroundColor: Colors.white,
-        disabledBackgroundColor: Colors.grey.shade900,
-        disabledForegroundColor: Colors.grey.shade700,
-        elevation: 2,
-        minimumSize: Size(buttonSize, buttonSize),
+        disabledBackgroundColor: Colors.grey.shade800,
       ),
-      child: Center(
-        child: icon != null
-          ? Icon(icon, size: buttonSize * 0.6, color: Colors.white) 
+      child: icon != null 
+          ? Icon(icon, size: size * 0.5)
           : Text(
               value,
               style: TextStyle(
-                fontSize: buttonSize * 0.6,
+                fontSize: size * 0.4,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
               ),
             ),
-      ),
     );
   }
 }
