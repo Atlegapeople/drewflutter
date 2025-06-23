@@ -86,14 +86,15 @@ class _ProductCardState extends State<ProductCard> with SingleTickerProviderStat
                     width: _isHovering ? 2.0 : 1.5,
                   ),
                 ),
+                margin: const EdgeInsets.all(8),
                 child: InkWell(
                   onTap: _handleTap,
                   child: Opacity(
                     opacity: isOutOfStock ? 0.6 : 1.0,
                     child: Padding(
-                      padding: const EdgeInsets.all(6.0),
+                      padding: const EdgeInsets.all(12),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           // Fixed-size image
@@ -137,31 +138,34 @@ class _ProductCardState extends State<ProductCard> with SingleTickerProviderStat
                           ),
                           const Spacer(),
                           // Availability badge
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            margin: const EdgeInsets.only(top: 4.0),
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: isOutOfStock
-                                  ? Colors.red.shade900.withOpacity(0.7)
-                                  : widget.product.stock < 10
-                                      ? Colors.orange.shade900.withOpacity(0.7)
-                                      : Colors.green.shade900.withOpacity(0.7),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: _isHovering
-                                  ? [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))]
-                                  : null,
-                            ),
-                            child: Text(
-                              isOutOfStock
-                                  ? 'OUT OF STOCK'
-                                  : 'Available: ${widget.product.stock}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              margin: const EdgeInsets.only(top: 4.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: isOutOfStock
+                                    ? Colors.red.shade900.withOpacity(0.7)
+                                    : widget.product.stock < 10
+                                        ? Colors.orange.shade900.withOpacity(0.7)
+                                        : Colors.green.shade900.withOpacity(0.7),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: _isHovering
+                                    ? [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))]
+                                    : null,
                               ),
-                              textAlign: TextAlign.center,
+                              child: Text(
+                                isOutOfStock
+                                    ? 'OUT OF STOCK'
+                                    : 'Available: ${widget.product.stock}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
                           // Tap instruction
