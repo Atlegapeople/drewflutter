@@ -112,58 +112,48 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
       overlay?.resetInactivityTimer();
     }
     
-    if (authService.isLockedOut) {
-      setState(() {
-        _errorMessage = 'System is locked due to too many failed attempts';
-      });
+    if (authService.isLockedOut || cardId == null) {
       soundService.playSound(SoundType.error);
+      setState(() {
+        _showDeniedAnimation = true;
+        _errorMessage = cardId == null ? 'Invalid card' : 'System locked';
+      });
+      await Future.delayed(const Duration(seconds: 2));
+      setState(() {
+        _showDeniedAnimation = false;
+      });
       return;
     }
-    
-    soundService.playSound(SoundType.cardScan);
     
     setState(() {
       _isAuthenticating = true;
       _errorMessage = null;
-      _showDeniedAnimation = true;
+      _showDeniedAnimation = false;
     });
     
     final success = await authService.authenticateWithRfid(cardId);
     
     if (success) {
       soundService.playSound(SoundType.success);
-      // Navigate to product screen
       if (mounted) {
-        Navigator.pushReplacement(
-          context, 
-          MaterialPageRoute(builder: (_) => const ProductScreen())
-        );
+        Navigator.pushReplacementNamed(context, '/products');
       }
-    } else {
-      soundService.playSound(SoundType.error);
-      
-      await Future.delayed(const Duration(seconds: 2));
-      
-      setState(() {
-        _isAuthenticating = false;
-        _showDeniedAnimation = false;
-        if (authService.isLockedOut) {
-          _errorMessage = 'Too many failed attempts. System locked.';
-        } else {
-          _errorMessage = 'Invalid card. ${authService.remainingAttempts} attempts remaining.';
-        }
-      });
-      
-      // Clear error message after 3 seconds
-      _errorTimer?.cancel();
-      _errorTimer = Timer(const Duration(seconds: 3), () {
-        if (mounted) {
-          setState(() {
-            _errorMessage = null;
-          });
-        }
-      });
+      return;
     }
+    
+    soundService.playSound(SoundType.error);
+    
+    await Future.delayed(const Duration(seconds: 2));
+    
+    setState(() {
+      _isAuthenticating = false;
+      _showDeniedAnimation = false;
+      if (authService.isLockedOut) {
+        _errorMessage = 'Too many failed attempts. System locked.';
+      } else {
+        _errorMessage = 'Access denied';
+      }
+    });
   }
 
   @override
