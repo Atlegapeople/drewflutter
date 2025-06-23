@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter_libserialport/flutter_libserialport.dart';
@@ -78,16 +79,12 @@ class DispenseService extends ChangeNotifier {
       config.stopBits = 1;
       config.setFlowControl(SerialPortFlowControl.none);
       
-      if (!_serialPort!.config = config) {
-        print("❌ Failed to configure serial port: ${SerialPort.lastError}");
-        _serialPort!.close();
-        return false;
-      }
+      _serialPort!.config = config;
       
       final commandId = DateTime.now().millisecondsSinceEpoch.toString();
       final command = '${productType.name}\n';
       
-      final bytesWritten = _serialPort!.write(command.codeUnits);
+      final bytesWritten = _serialPort!.write(Uint8List.fromList(command.codeUnits));
       
       _serialPort!.close();
       _lastDispenseId = commandId;
