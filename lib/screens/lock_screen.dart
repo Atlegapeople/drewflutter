@@ -289,8 +289,19 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
                               width: isSmallScreen ? 200 : 300,
                               height: isSmallScreen ? 200 : 300,
                               decoration: BoxDecoration(
-                                border: Border.all(color: const Color(0xFFF48FB1)),
+                                border: Border.all(
+                                  color: const Color(0xFFF48FB1),
+                                  width: 3.0,
+                                ),
                                 borderRadius: BorderRadius.circular(16),
+                                image: DecorationImage(
+                                  image: AssetImage('assets/images/scan-card.png'),
+                                  fit: BoxFit.cover,
+                                  colorFilter: ColorFilter.mode(
+                                    Colors.black.withOpacity(0.3),
+                                    BlendMode.darken,
+                                  ),
+                                ),
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -298,11 +309,6 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
                                   Stack(
                                     alignment: Alignment.center,
                                     children: [
-                                      Image.asset(
-                                        'assets/images/scan-card.png',
-                                        width: isSmallScreen ? 100 : 150,
-                                        height: isSmallScreen ? 100 : 150,
-                                      ),
                                       Container(
                                         width: isSmallScreen ? 120 : 180,
                                         height: isSmallScreen ? 120 : 180,
@@ -333,6 +339,14 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
                                     style: TextStyle(
                                       fontSize: isSmallScreen ? 14 : 20,
                                       color: const Color(0xFFF48FB1),
+                                      fontWeight: FontWeight.bold,
+                                      shadows: [
+                                        Shadow(
+                                          blurRadius: 4.0,
+                                          color: Colors.black.withOpacity(0.5),
+                                          offset: const Offset(2, 2),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   RfidScanner(
