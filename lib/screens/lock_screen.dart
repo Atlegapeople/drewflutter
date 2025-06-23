@@ -240,7 +240,7 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
                                       }
                                     },
                                     disabled: _isAuthenticating || authService.isLockedOut,
-                                    buttonSize: isSmallScreen ? 40 : 50,
+                                    buttonSize: isSmallScreen ? 50 : 70,
                                   ),
                                 ),
                               ),

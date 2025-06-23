@@ -5,56 +5,52 @@ import '../services/sound_service.dart';
 class PinKeypad extends StatelessWidget {
   final Function(String) onKeyPress;
   final bool disabled;
+  final double? buttonSize;
 
   const PinKeypad({
     super.key,
     required this.onKeyPress,
     this.disabled = false,
+    this.buttonSize,
   });
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth <= 800;
+    final effectiveButtonSize = buttonSize ?? (isSmallScreen ? 40 : 60);
     
     return AspectRatio(
-      aspectRatio: isSmallScreen ? 4/3 : 3/4, // More compact for small screens
+      aspectRatio: isSmallScreen ? 4/3 : 3/4,
       child: GridView.count(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         crossAxisCount: 3,
         childAspectRatio: 1.0,
-        mainAxisSpacing: isSmallScreen ? 8 : 12, // Reduced spacing for 7"
+        mainAxisSpacing: isSmallScreen ? 8 : 12,
         crossAxisSpacing: isSmallScreen ? 8 : 12,
         padding: EdgeInsets.all(isSmallScreen ? 4 : 6),
         children: [
-          // First row: 1, 2, 3
-          _buildKeyButton(context, '1', null),
-          _buildKeyButton(context, '2', null),
-          _buildKeyButton(context, '3', null),
-          // Second row: 4, 5, 6
-          _buildKeyButton(context, '4', null),
-          _buildKeyButton(context, '5', null),
-          _buildKeyButton(context, '6', null),
-          // Third row: 7, 8, 9
-          _buildKeyButton(context, '7', null),
-          _buildKeyButton(context, '8', null),
-          _buildKeyButton(context, '9', null),
-          // Fourth row: clear, 0, enter
-          _buildKeyButton(context, 'clear', Icons.clear_all),
-          _buildKeyButton(context, '0', null),
-          _buildKeyButton(context, 'enter', Icons.check_circle_outline),
+          _buildKeyButton(context, '1', null, effectiveButtonSize),
+          _buildKeyButton(context, '2', null, effectiveButtonSize),
+          _buildKeyButton(context, '3', null, effectiveButtonSize),
+          _buildKeyButton(context, '4', null, effectiveButtonSize),
+          _buildKeyButton(context, '5', null, effectiveButtonSize),
+          _buildKeyButton(context, '6', null, effectiveButtonSize),
+          _buildKeyButton(context, '7', null, effectiveButtonSize),
+          _buildKeyButton(context, '8', null, effectiveButtonSize),
+          _buildKeyButton(context, '9', null, effectiveButtonSize),
+          _buildKeyButton(context, 'clear', Icons.clear_all, effectiveButtonSize),
+          _buildKeyButton(context, '0', null, effectiveButtonSize),
+          _buildKeyButton(context, 'enter', Icons.check_circle_outline, effectiveButtonSize),
         ],
       ),
     );
   }
   
-  Widget _buildKeyButton(BuildContext context, String value, IconData? icon) {
+  Widget _buildKeyButton(BuildContext context, String value, IconData? icon, double buttonSize) {
     final soundService = Provider.of<SoundService>(context, listen: false);
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth <= 800;
     
-    // Determine button styling based on button type
     Color backgroundColor;
     if (value == 'clear') {
       backgroundColor = Colors.orange.shade800;
@@ -73,22 +69,23 @@ class PinKeypad extends StatelessWidget {
             },
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(isSmallScreen ? 10 : 15),
+          borderRadius: BorderRadius.circular(buttonSize / 4),
         ),
         padding: EdgeInsets.zero,
         backgroundColor: backgroundColor,
         foregroundColor: Colors.white,
         disabledBackgroundColor: Colors.grey.shade900,
         disabledForegroundColor: Colors.grey.shade700,
-        elevation: isSmallScreen ? 2 : 4,
+        elevation: 2,
+        minimumSize: Size(buttonSize, buttonSize),
       ),
       child: Center(
         child: icon != null
-          ? Icon(icon, size: isSmallScreen ? 24 : 40, color: Colors.white) 
+          ? Icon(icon, size: buttonSize * 0.6, color: Colors.white) 
           : Text(
               value,
               style: TextStyle(
-                fontSize: isSmallScreen ? 24 : 40,
+                fontSize: buttonSize * 0.6,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
