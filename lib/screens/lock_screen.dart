@@ -241,7 +241,7 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
                                   ),
                                   SizedBox(width: isSmallScreen ? 16 : 24),
                                   Container(
-                                    width: isSmallScreen ? 80 : 120,
+                                    width: isSmallScreen ? 120 : 160,
                                     height: isSmallScreen ? 280 : 380,
                                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                                     child: Column(
@@ -273,25 +273,6 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
                                                   ),
                                                 ),
                                           ),
-                                        ),
-                                        const Spacer(),
-                                        ElevatedButton(
-                                          onPressed: _isAuthenticating || authService.isLockedOut
-                                              ? null
-                                              : _handlePinSubmit,
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFFF48FB1),
-                                            foregroundColor: Colors.white,
-                                            disabledBackgroundColor: Colors.grey.shade800,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: isSmallScreen ? 12 : 16,
-                                              horizontal: isSmallScreen ? 8 : 12,
-                                            ),
-                                          ),
-                                          child: const Text('Submit'),
                                         ),
                                       ],
                                     ),
