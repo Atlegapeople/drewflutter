@@ -14,16 +14,19 @@ class PinKeypad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth <= 800;
+    
     return AspectRatio(
-      aspectRatio: 3/4, // Ensures the grid maintains a reasonable aspect ratio
+      aspectRatio: isSmallScreen ? 4/3 : 3/4, // More compact for small screens
       child: GridView.count(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         crossAxisCount: 3,
-        childAspectRatio: 1.0, // Perfect square buttons
-        mainAxisSpacing: 12, // Less spacing to allow larger buttons
-        crossAxisSpacing: 12, // Less spacing to allow larger buttons
-        padding: const EdgeInsets.all(6),
+        childAspectRatio: 1.0,
+        mainAxisSpacing: isSmallScreen ? 8 : 12, // Reduced spacing for 7"
+        crossAxisSpacing: isSmallScreen ? 8 : 12,
+        padding: EdgeInsets.all(isSmallScreen ? 4 : 6),
         children: [
           // First row: 1, 2, 3
           _buildKeyButton(context, '1', null),
@@ -48,6 +51,8 @@ class PinKeypad extends StatelessWidget {
   
   Widget _buildKeyButton(BuildContext context, String value, IconData? icon) {
     final soundService = Provider.of<SoundService>(context, listen: false);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth <= 800;
     
     // Determine button styling based on button type
     Color backgroundColor;
@@ -68,22 +73,22 @@ class PinKeypad extends StatelessWidget {
             },
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(isSmallScreen ? 10 : 15),
         ),
         padding: EdgeInsets.zero,
         backgroundColor: backgroundColor,
         foregroundColor: Colors.white,
         disabledBackgroundColor: Colors.grey.shade900,
         disabledForegroundColor: Colors.grey.shade700,
-        elevation: 4,
+        elevation: isSmallScreen ? 2 : 4,
       ),
       child: Center(
         child: icon != null
-          ? Icon(icon, size: 40, color: Colors.white) 
+          ? Icon(icon, size: isSmallScreen ? 24 : 40, color: Colors.white) 
           : Text(
               value,
-              style: const TextStyle(
-                fontSize: 40,
+              style: TextStyle(
+                fontSize: isSmallScreen ? 24 : 40,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),

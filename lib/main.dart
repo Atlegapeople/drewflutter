@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
         title: 'D.R.E.W. Vending Machine',
         theme: ThemeData.dark().copyWith(
           colorScheme: ColorScheme.dark(
-            primary: const Color(0xFFF48FB1), // Pink as primary color
+            primary: const Color(0xFFF48FB1),
             secondary: const Color(0xFFF48FB1),
             surface: const Color(0xFF121212),
             background: const Color(0xFF121212),
@@ -55,22 +55,22 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
           textTheme: const TextTheme(
             headlineLarge: TextStyle(
-              fontSize: 32.0, 
+              fontSize: 24.0, 
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
             ),
             headlineMedium: TextStyle(
-              fontSize: 24.0, 
+              fontSize: 18.0, 
               fontWeight: FontWeight.bold,
             ),
-            bodyLarge: TextStyle(fontSize: 18.0),
-            bodyMedium: TextStyle(fontSize: 16.0),
+            bodyLarge: TextStyle(fontSize: 14.0),
+            bodyMedium: TextStyle(fontSize: 12.0),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
               ),
             ),
           ),

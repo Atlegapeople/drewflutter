@@ -85,9 +85,11 @@ class RfidScannerState extends State<RfidScanner> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        final isSmallScreen = screenWidth <= 800;
         final maxWidth = constraints.maxWidth;
         final maxHeight = constraints.maxHeight;
-        final scannerSize = (maxWidth < maxHeight ? maxWidth : maxHeight) * 0.7;
+        final scannerSize = (maxWidth < maxHeight ? maxWidth : maxHeight) * (isSmallScreen ? 0.6 : 0.7);
         
         return SingleChildScrollView(
           child: ConstrainedBox(
@@ -182,7 +184,7 @@ class RfidScannerState extends State<RfidScanner> {
                                         'Tap your card',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          fontSize: scannerSize * 0.08,
+                                          fontSize: isSmallScreen ? 16 : scannerSize * 0.08,
                                           color: Colors.white,
                                           shadows: [
                                             Shadow(
@@ -201,11 +203,14 @@ class RfidScannerState extends State<RfidScanner> {
                     ),
                   ),
                   
-                  const SizedBox(height: 16),
+                  SizedBox(height: isSmallScreen ? 8 : 16),
                   if (widget.isLocked)
-                    const Text(
+                    Text(
                       'Scanner is locked',
-                      style: TextStyle(color: Colors.red),
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: isSmallScreen ? 12 : 14,
+                      ),
                     ),
                 ],
               ),

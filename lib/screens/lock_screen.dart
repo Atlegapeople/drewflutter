@@ -170,256 +170,161 @@ class _LockScreenState extends State<LockScreen> with SingleTickerProviderStateM
     
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black,
-              Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              Colors.black,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(height: 10),
-                        // Logo and status row
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Left spacer to center logo
-                            const SizedBox(width: 100),
-                            // Centered logo
-                            Image.asset(
-                              'assets/images/logo.png',
-                              height: 30,
-                              fit: BoxFit.contain,
-                            ),
-                            // System status on right
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.green, width: 1),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isSmallScreen = constraints.maxHeight < 600;
+          return ScreensaverOverlay(
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(isSmallScreen ? 8 : 16),
+                child: Column(
+                  children: [
+                    SizedBox(height: isSmallScreen ? 8 : 16),
+                    Text(
+                      'Please authenticate to continue',
+                      style: TextStyle(fontSize: isSmallScreen ? 14 : 18),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: isSmallScreen ? 8 : 16),
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[800],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: TabBar(
+                        controller: _tabController,
+                        labelColor: Colors.white,
+                        unselectedLabelColor: Colors.grey[400],
+                        indicator: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.pink,
+                        ),
+                        tabs: const [
+                          Tab(text: 'PIN'),
+                          Tab(text: 'RFID'),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: isSmallScreen ? 8 : 16),
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          // PIN Tab
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(isSmallScreen ? 8 : 16),
+                                width: isSmallScreen ? 200 : 300,
+                                height: isSmallScreen ? 200 : 300,
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.pink),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: isSmallScreen ? 180 : 260,
+                                      height: isSmallScreen ? 120 : 180,
+                                      child: PinKeypad(
+                                        onKeyPress: (key) {
+                                          if (authService.isLockedOut) return;
+                                          
+                                          if (key == 'clear') {
+                                            _pinController.clear();
+                                          } else if (key == 'backspace') {
+                                            final text = _pinController.text;
+                                            if (text.isNotEmpty) {
+                                              _pinController.text = text.substring(0, text.length - 1);
+                                            }
+                                          } else if (key == 'enter') {
+                                            _handlePinSubmit();
+                                          } else {
+                                            if (_pinController.text.length < 4) {
+                                              _pinController.text += key;
+                                            }
+                                          }
+                                        },
+                                        disabled: _isAuthenticating || authService.isLockedOut,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
+                            ],
+                          ),
+                          
+                          // RFID Tab
+                          Center(
+                            child: Container(
+                              padding: EdgeInsets.all(isSmallScreen ? 8 : 16),
+                              width: isSmallScreen ? 200 : 300,
+                              height: isSmallScreen ? 200 : 300,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.pink),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: const BoxDecoration(
-                                      color: Colors.green,
-                                      shape: BoxShape.circle,
-                                    ),
+                                  Icon(Icons.nfc, size: isSmallScreen ? 60 : 100, color: Colors.pink),
+                                  SizedBox(height: isSmallScreen ? 8 : 16),
+                                  Text(
+                                    'Tap your card',
+                                    style: TextStyle(fontSize: isSmallScreen ? 14 : 20),
                                   ),
-                                  const SizedBox(width: 6),
-                                  const Text(
-                                    'ONLINE',
-                                    style: TextStyle(
-                                      color: Colors.green,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  RfidScanner(
+                                    key: _rfidScannerKey,
+                                    onCardScanned: _onRfidScanned,
+                                    isLocked: authService.isLockedOut,
                                   ),
                                 ],
                               ),
                             ),
-                          ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (_errorMessage != null) ...[
+                      SizedBox(height: isSmallScreen ? 8 : 16),
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        const SizedBox(height: 2),
-                        const Text(
-                          'Dignity • Respect • Empowerment for Women',
+                        child: Text(
+                          _errorMessage!,
+                          style: TextStyle(color: Colors.white, fontSize: isSmallScreen ? 12 : 14),
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.white70,
-                          ),
                         ),
-                        const SizedBox(height: 20),
-                        // Auth card
-                        Card(
-                          elevation: 8,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          color: Colors.black.withOpacity(0.6),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  'Please authenticate to continue',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                // Tab Bar for PIN and RFID
-                                TabBar(
-                                  controller: _tabController,
-                                  tabs: [
-                                    Tab(
-                                      icon: Icon(
-                                        Icons.dialpad,
-                                        color: Theme.of(context).colorScheme.primary,
-                                      ),
-                                      text: 'PIN Code',
-                                    ),
-                                    Tab(
-                                      icon: Icon(
-                                        Icons.credit_card,
-                                        color: Theme.of(context).colorScheme.primary,
-                                      ),
-                                      text: 'RFID Card',
-                                    ),
-                                  ],
-                                  labelColor: Theme.of(context).colorScheme.primary,
-                                  unselectedLabelColor: Colors.grey,
-                                  indicatorColor: Theme.of(context).colorScheme.primary,
-                                ),
-                                const SizedBox(height: 16),
-                                // Tab Content
-                                SizedBox(
-                                  height: 500, // Further increased height for tab content to fit larger keypad
-                                  child: TabBarView(
-                                    controller: _tabController,
-                                    children: [
-                                      // PIN Tab
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          // PIN input display
-                                          Container(
-                                            width: 200,
-                                            height: 50,
-                                            margin: const EdgeInsets.only(bottom: 16),
-                                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey.shade900,
-                                              borderRadius: BorderRadius.circular(15),
-                                              border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.5), width: 1.5),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black.withOpacity(0.3),
-                                                  blurRadius: 5,
-                                                  offset: const Offset(0, 3),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Center(
-                                              child: _pinController.text.isEmpty
-                                                ? const Text(
-                                                    'Enter PIN',
-                                                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                                                  )
-                                                : Text(
-                                                    '●' * _pinController.text.length,
-                                                    style: TextStyle(fontSize: 28, letterSpacing: 12, color: Theme.of(context).colorScheme.primary),
-                                                  ),
-                                            ),
-                                          ),
-                                          // PIN keypad
-                                          SizedBox(
-                                            height: 380, // Further increased height for the larger keypad
-                                            child: PinKeypad(
-                                              onKeyPress: (key) {
-                                                if (authService.isLockedOut) return;
-                                                
-                                                if (key == 'clear') {
-                                                  _pinController.clear();
-                                                } else if (key == 'backspace') {
-                                                  final text = _pinController.text;
-                                                  if (text.isNotEmpty) {
-                                                    _pinController.text = text.substring(0, text.length - 1);
-                                                  }
-                                                } else if (key == 'enter') {
-                                                  _handlePinSubmit();
-                                                } else {
-                                                  // Only allow up to 4 digits
-                                                  if (_pinController.text.length < 4) {
-                                                    _pinController.text += key;
-                                                  }
-                                                }
-                                              },
-                                              disabled: _isAuthenticating || authService.isLockedOut,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      
-                                      // RFID Tab
-                                      RfidScanner(
-                                        key: _rfidScannerKey,
-                                        onCardScanned: _onRfidScanned,
-                                        isLocked: authService.isLockedOut,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                      ),
+                    ],
+                    if (authService.isLockedOut) ...[
+                      SizedBox(height: isSmallScreen ? 8 : 16),
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        const SizedBox(height: 16),
-                        if (_errorMessage != null) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.white),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-                if (authService.isLockedOut) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'System is locked for 60 seconds due to too many failed attempts',
-                      style: TextStyle(color: Colors.white),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 20),
-                      ],
-                    ),
-                  ),
+                        child: Text(
+                          'System is locked for 60 seconds due to too many failed attempts',
+                          style: TextStyle(color: Colors.white, fontSize: isSmallScreen ? 12 : 14),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                    SizedBox(height: isSmallScreen ? 8 : 16),
+                  ],
                 ),
-              );
-            },
-          ),
-        ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
